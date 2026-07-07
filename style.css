@@ -1,0 +1,149 @@
+:root {
+  --bg: #0e0f12;
+  --panel: rgba(20, 22, 27, 0.72);
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --text: #f4f4f6;
+  --muted: #a7abb4;
+  --accent: #6ea8fe;
+  --accent-2: #2b6ff0;
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic",
+    "Apple SD Gothic Neo", Pretendard, Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+#scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* ---------- 로딩 ---------- */
+#loader {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(120% 120% at 50% 30%, #1b2233 0%, #0b0c10 70%);
+  transition: opacity 0.6s ease, visibility 0.6s;
+}
+#loader.done { opacity: 0; visibility: hidden; }
+.loader-inner { text-align: center; }
+.loader-logo { font-size: 56px; animation: float 2.4s ease-in-out infinite; }
+.loader-inner h1 { margin: 10px 0 6px; letter-spacing: 4px; font-weight: 800; }
+.loader-inner p { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+.bar { width: 240px; height: 4px; border-radius: 4px; background: rgba(255,255,255,0.12); overflow: hidden; margin: 0 auto; }
+#bar-fill { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width 0.3s ease; }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+/* ---------- 상단 ---------- */
+#topbar {
+  position: fixed; top: 16px; left: 16px; z-index: 20;
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 10px 16px; border-radius: 14px;
+  background: var(--panel); border: 1px solid var(--panel-border);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+}
+.brand { font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+.brand-mark { font-size: 18px; }
+.brand-sub { font-size: 12px; color: var(--muted); }
+
+/* ---------- 방 이동 ---------- */
+#rooms {
+  position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 20;
+  display: flex; gap: 6px; padding: 6px;
+  background: var(--panel); border: 1px solid var(--panel-border);
+  border-radius: 14px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+}
+.room-btn {
+  border: 0; cursor: pointer; color: var(--muted);
+  background: transparent; padding: 8px 14px; border-radius: 10px;
+  font-size: 13px; font-weight: 600; transition: all 0.2s;
+}
+.room-btn:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.room-btn.active { color: #fff; background: var(--accent-2); }
+
+/* ---------- 하단 패널 ---------- */
+#panel {
+  position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 20;
+  display: flex; gap: 18px; align-items: center; flex-wrap: wrap; justify-content: center;
+  padding: 12px 18px; max-width: calc(100vw - 24px);
+  background: var(--panel); border: 1px solid var(--panel-border);
+  border-radius: 16px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+}
+.panel-group { display: flex; align-items: center; gap: 8px; }
+.panel-label { font-size: 11px; color: var(--muted); font-weight: 600; }
+.pill {
+  border: 1px solid var(--panel-border); cursor: pointer; color: var(--muted);
+  background: rgba(255,255,255,0.04); padding: 7px 12px; border-radius: 9px;
+  font-size: 12px; font-weight: 600; transition: all 0.2s;
+}
+.pill:hover { color: var(--text); }
+.pill.active { color: #fff; background: var(--accent-2); border-color: transparent; }
+.pill.wide { padding: 8px 14px; }
+.swatch {
+  width: 26px; height: 26px; border-radius: 8px; cursor: pointer;
+  background: var(--c); border: 2px solid transparent; transition: all 0.15s;
+}
+.swatch:hover { transform: scale(1.08); }
+.swatch.active { border-color: #fff; box-shadow: 0 0 0 2px var(--accent-2); }
+
+/* ---------- 1인칭 안내 ---------- */
+#walk-hint {
+  position: fixed; inset: 0; z-index: 40;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.55); backdrop-filter: blur(3px);
+}
+#walk-hint.hidden { display: none; }
+.hint-card {
+  text-align: center; padding: 28px 34px; border-radius: 18px;
+  background: var(--panel); border: 1px solid var(--panel-border); box-shadow: var(--shadow);
+}
+.hint-card strong { font-size: 18px; }
+.hint-card p { margin: 12px 0 20px; color: var(--muted); font-size: 13px; }
+kbd {
+  display: inline-block; padding: 3px 8px; margin: 0 2px;
+  background: rgba(255,255,255,0.1); border: 1px solid var(--panel-border);
+  border-radius: 6px; font-size: 12px; font-family: inherit;
+}
+.hint-card button, #btn-walk-start {
+  border: 0; cursor: pointer; color: #fff; background: var(--accent-2);
+  padding: 10px 22px; border-radius: 10px; font-size: 14px; font-weight: 700;
+}
+
+/* ---------- 방 정보 ---------- */
+#room-info {
+  position: fixed; bottom: 90px; left: 16px; z-index: 15;
+  max-width: 280px; padding: 14px 16px; border-radius: 14px;
+  background: var(--panel); border: 1px solid var(--panel-border);
+  backdrop-filter: blur(14px); box-shadow: var(--shadow);
+  opacity: 0; transform: translateY(8px); transition: all 0.35s; pointer-events: none;
+}
+#room-info.show { opacity: 1; transform: translateY(0); }
+#room-info h3 { font-size: 15px; margin-bottom: 6px; }
+#room-info p { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+/* ---------- HUD ---------- */
+#hud {
+  position: fixed; bottom: 16px; right: 16px; z-index: 15;
+  font-size: 11px; color: var(--muted); padding: 6px 12px;
+  background: var(--panel); border: 1px solid var(--panel-border);
+  border-radius: 10px; backdrop-filter: blur(8px);
+}
+
+@media (max-width: 720px) {
+  #topbar { top: 12px; left: 12px; padding: 8px 12px; }
+  #rooms { top: 70px; padding: 4px; gap: 3px; }
+  .room-btn { padding: 6px 10px; font-size: 12px; }
+  #panel { gap: 10px; padding: 10px; bottom: 12px; }
+  .panel-label { display: none; }
+  #hud { display: none; }
+  #room-info { bottom: 120px; }
+}
