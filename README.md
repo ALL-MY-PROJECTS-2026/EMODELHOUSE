@@ -1,44 +1,55 @@
-# EMODELHOUSE
+# EMODELHOUSE — 대명자이그랜드시티 84A
 
-three.js로 만든 **인터랙티브 가상 모델하우스** 템플릿입니다. 외부 3D 에셋 없이 primitive로 구성되어 있어 별도 빌드/설치 없이 정적 호스팅(GitHub Pages)에 바로 배포됩니다.
+**대명자이그랜드시티 84A 타입**을 실제 분양 스펙 기반으로 재구성한 **인터랙티브 가상 모델하우스**입니다. three.js primitive로만 구성되어 별도 빌드 없이 GitHub Pages에 바로 배포됩니다.
+
+> 브랜치: `daemyung-xi-grand-city` · 기본 템플릿은 `main` 브랜치 참고
 
 ## 🔴 라이브 데모
 https://all-my-projects-2026.github.io/EMODELHOUSE/
 
+## 🏢 단지 정보 (실제 공개 분양 자료 기준)
+| 항목 | 내용 |
+|---|---|
+| 위치 | 대구 남구 대명동 2301-2 |
+| 규모 | 2,023세대 · 17개동 · 지하2~지상34층 |
+| 입주 | 2026년 4월 예정 |
+| 건설사 | GS건설(자이) |
+
+### 평형 타입
+| 타입 | 전용/공급 | 구조 | 공급 | 분양가 |
+|---|---|---|---|---|
+| 59A | 59.9 / 81.94㎡ | 3Bay 판상형 | 543세대 | 3.70~3.98억 |
+| **84A** | **84.9 / 114.49㎡** | **3Bay 판상형** | **213세대** | **5.24~5.65억** |
+| 84B | 84.9 / 114.87㎡ | 3Bay 판상형 | 254세대 | 5.19~5.58억 |
+| 101 | 101.9 / 137.56㎡ | 4Bay 판상형 | 57세대 | 6.50~6.99억 |
+
+**3D 뷰는 대표 평형 84A(3Bay 판상형)** 를 실제 평면 구조로 재현했습니다: 남향 3베이(침실2·거실·안방) + LDK 대면형 주방 + 안방 드레스룸/전용욕실 + 공용욕실 + 현관.
+
 ## ✨ 기능
-- **4개 공간 투어** — 거실 / 주방 / 침실 / 욕실 (버튼 클릭 시 카메라 자동 이동)
-- **1인칭 둘러보기** — `WASD` 이동 + 마우스 시선 (PointerLock)
-- **낮 / 밤 조명 전환** — 태양광 ↔ 천장등
-- **바닥재 / 벽지 실시간 교체** — 오크·월넛·그레이·화이트 / 아이보리·웜그레이·민트·블루
-- **오빗 컨트롤** — 드래그 회전, 휠 확대, 우클릭 이동
-- **모바일 반응형 UI**
+- **공간 투어** — 거실 / 주방·식당 / 안방 / 침실 / 욕실 카메라 자동 이동
+- **타입 선택기** — 59A·84A·84B·101 실제 분양 데이터 표시
+- **1인칭 둘러보기** — `WASD` + 마우스 (거실에서 시작)
+- **낮/밤 조명** · **바닥재/벽지 실시간 교체**
+- **모바일 반응형**
+
+## 🖼 실제 사진(선택)
+저작권 보호를 위해 마케팅 사진은 저장소에 포함하지 않았습니다. 실제 사진을 넣으려면 `assets/` 폴더에 이미지를 추가하고 갤러리 오버레이를 연결하세요. 3D 평면은 공개된 분양 스펙(전용면적·베이·룸 구성)을 참고자료로 삼아 재구성한 것입니다.
 
 ## 🛠 기술 스택
-- [three.js](https://threejs.org) `r160` (CDN + importmap)
-- OrbitControls · PointerLockControls · RoomEnvironment
-- 순수 정적 파일 (HTML / CSS / JS) — 번들러 불필요
+three.js `r160` (CDN importmap) · OrbitControls · PointerLockControls · RoomEnvironment · 순수 정적 파일
 
 ## 📁 구조
 ```
-index.html    # 마크업 + UI + importmap
-style.css     # UI 스타일
-main.js       # 3D 씬 · 가구 · 인터랙션
-.nojekyll     # GitHub Pages Jekyll 비활성화
+index.html   UI · 타입 선택기 · importmap
+style.css    스타일
+main.js      84A 3Bay 평면 · 가구 · 인터랙션
+.nojekyll    Pages Jekyll 비활성화
 ```
 
 ## 🚀 로컬 실행
-importmap(ES Module) 사용으로 `file://` 직접 열기는 안 되고 로컬 서버가 필요합니다.
 ```bash
-npx serve .
-# 또는
-python -m http.server 8000
+npx serve .    # 또는  python -m http.server 8000
 ```
 
-## 📦 커스터마이징
-- 평면/가구: `main.js` 하단 `배치` 섹션에서 좌표 수정
-- 방 카메라: `VIEWS` 객체
-- 색상 옵션: `FLOOR_COLORS` / `WALL_COLORS`
-- 실제 사진급 퀄리티가 필요하면 `main.js`의 primitive 가구를 `GLTFLoader`로 불러온 glTF 모델로 교체하세요.
-
 ---
-Made with three.js 🏠
+Made with three.js 🏢 · 평면은 공개 분양자료 기반 재구성

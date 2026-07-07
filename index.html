@@ -3,38 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>E-MODELHOUSE · 가상 모델하우스</title>
-  <meta name="description" content="three.js로 만든 인터랙티브 가상 모델하우스 템플릿" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>" />
+  <title>대명자이그랜드시티 · 84A 가상 모델하우스</title>
+  <meta name="description" content="대명자이그랜드시티 84A 타입 3Bay 판상형 가상 모델하우스 (three.js)" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏢</text></svg>" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- 로딩 화면 -->
+  <!-- 로딩 -->
   <div id="loader">
     <div class="loader-inner">
-      <div class="loader-logo">🏠</div>
-      <h1>E-MODELHOUSE</h1>
-      <p>가상 모델하우스를 준비하고 있습니다…</p>
+      <div class="loader-logo">🏢</div>
+      <h1>대명자이그랜드시티</h1>
+      <p>84A 가상 모델하우스를 준비하고 있습니다…</p>
       <div class="bar"><span id="bar-fill"></span></div>
     </div>
   </div>
 
   <!-- 상단 브랜드 -->
   <header id="topbar">
-    <div class="brand"><span class="brand-mark">🏠</span> E-MODELHOUSE</div>
-    <div class="brand-sub">84A 타입 · 34평형 · 3Bay</div>
+    <div class="brand"><span class="brand-mark">🏢</span> 대명자이그랜드시티</div>
+    <div class="brand-sub">84A · 전용 84㎡ · 3Bay 판상형 · 대구 남구 대명동</div>
+    <div class="brand-spec">2,023세대 · 17개동 · 지하2~지상34층 · 2026.4 입주 · GS건설</div>
   </header>
 
-  <!-- 방 이동 버튼 -->
+  <!-- 공간 이동 -->
   <nav id="rooms" aria-label="공간 이동">
     <button class="room-btn active" data-room="overview">전체 조감</button>
     <button class="room-btn" data-room="living">거실</button>
-    <button class="room-btn" data-room="kitchen">주방</button>
-    <button class="room-btn" data-room="bedroom">침실</button>
+    <button class="room-btn" data-room="kitchen">주방·식당</button>
+    <button class="room-btn" data-room="master">안방</button>
+    <button class="room-btn" data-room="bed">침실</button>
     <button class="room-btn" data-room="bath">욕실</button>
   </nav>
 
-  <!-- 하단 컨트롤 패널 -->
+  <!-- 타입 선택기 -->
+  <aside id="types" aria-label="평형 타입">
+    <div class="types-title">평형 타입</div>
+    <button class="type-btn" data-type="59A">59A</button>
+    <button class="type-btn active" data-type="84A">84A</button>
+    <button class="type-btn" data-type="84B">84B</button>
+    <button class="type-btn" data-type="101">101</button>
+    <div id="type-info"></div>
+  </aside>
+
+  <!-- 하단 패널 -->
   <div id="panel">
     <div class="panel-group">
       <span class="panel-label">시간대</span>
@@ -43,8 +55,8 @@
     </div>
     <div class="panel-group">
       <span class="panel-label">바닥재</span>
-      <button class="swatch" data-floor="oak" style="--c:#c8a06a" title="오크"></button>
-      <button class="swatch active" data-floor="walnut" style="--c:#7a5230" title="월넛"></button>
+      <button class="swatch active" data-floor="oak" style="--c:#c8a06a" title="오크"></button>
+      <button class="swatch" data-floor="walnut" style="--c:#8a5a34" title="월넛"></button>
       <button class="swatch" data-floor="grey" style="--c:#9a9a9a" title="그레이"></button>
       <button class="swatch" data-floor="white" style="--c:#e8e6e0" title="화이트"></button>
     </div>
@@ -65,13 +77,11 @@
     <div class="hint-card">
       <strong>1인칭 둘러보기</strong>
       <p><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 이동 · <kbd>마우스</kbd> 시선 · <kbd>ESC</kbd> 종료</p>
-      <button id="btn-walk-start">시작하기</button>
+      <button id="btn-walk-start">거실에서 시작</button>
     </div>
   </div>
 
-  <!-- 방 정보 툴팁 -->
   <div id="room-info"></div>
-
   <div id="hud">드래그: 회전 · 휠: 확대 · 우클릭: 이동</div>
 
   <canvas id="scene"></canvas>
