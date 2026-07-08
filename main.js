@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 /* =========================================================
    대명자이그랜드시티 · 84A 타입 가상 모델하우스
@@ -288,43 +289,113 @@ function plant(x, z, s = 1) {
 function shoeCabinet(x, z, rot = 0) { const g = new THREE.Group(); g.add(box(1.2, 2.0, 0.35, mat(0xe8e4dc, { roughness: 0.5 }), 0, 1.0, 0)); g.position.set(x, 0, z); g.rotation.y = rot; APT.add(g); }
 
 /* =========================================================
-   가구 배치 (84A)
+   가구 배치 — primitive 폴백 (glTF 로드 실패 시 사용)
    ========================================================= */
-// 거실 (중앙 전면)
-rug(-1.0, 2.4, 3.4, 2.4, 0xb9c2cc);
-sofa(-1.0, 3.4, Math.PI);
-coffeeTable(-1.0, 2.2);
-tvWall(-1.0, 0.75);
-plant(1.2, 3.6, 1.1);
+function primitiveFurniture() {
+  rug(-1.0, 2.4, 3.4, 2.4, 0xb9c2cc);
+  sofa(-1.0, 3.4, Math.PI); coffeeTable(-1.0, 2.2); tvWall(-1.0, 0.75); plant(1.2, 3.6, 1.1);
+  kitchenLine(-1.0, -4.55, 4.6); island(-1.0, -3.4); fridge(1.3, -4.5); diningSet(-1.0, -1.6);
+  bed(4.2, 3.1, Math.PI, true); nightstand(2.5, 3.6); nightstand(5.9, 3.6); plant(5.7, 1.4, 0.9);
+  wardrobe(2.5, 0.1, 2.0, 0); bathroom(5.2, -0.9);
+  bed(-5.0, 3.0, Math.PI, false); desk(-4.0, 1.4, Math.PI / 2);
+  bed(-5.1, -0.9, Math.PI / 2, false); wardrobe(-4.1, -1.9, 1.6, 0);
+  bathroom(3.0, -3.9, true);
+  shoeCabinet(-6.1, -3.4, Math.PI / 2); plant(-4.9, -4.3, 0.8);
+}
 
-// 주방·식당 (중앙 후면, LDK 오픈)
-kitchenLine(-1.0, -4.55, 4.6);
-island(-1.0, -3.4);
-fridge(1.3, -4.5);
-diningSet(-1.0, -1.6);
+/* =========================================================
+   glTF 가구 (Kenney Furniture Kit · CC0)
+   auto-fit: 바운딩박스로 실척 스케일 + 바닥에 자동 안착
+   ========================================================= */
+const gltfLoader = new GLTFLoader();
+const MODEL_DIR = 'assets/models/';
+const FACE = 0;                     // 전역 방향 보정(전부 반대면 Math.PI)
+const MODEL_SCALE = 1.8;            // Kenney 킷 → 실척(m) 보정(내부 일관 스케일)
+window.__natSizes = {};
 
-// 안방 (우측 전면) + 협탁
-bed(4.2, 3.1, Math.PI, true);
-nightstand(2.5, 3.6); nightstand(5.9, 3.6);
-plant(5.7, 1.4, 0.9);
-// 드레스룸 (안방 뒤 좌) + 안방욕실 (우)
-wardrobe(2.5, 0.1, 2.0, 0);
-bathroom(5.2, -0.9);   // 안방욕실
+function loadGLB(name) {
+  return new Promise((res, rej) => gltfLoader.load(MODEL_DIR + name + '.glb', g => res(g.scene), undefined, rej));
+}
+// name, x, z(중심 좌표), yaw, y(바닥 높이), s(스케일 오버라이드)
+function place(name, x, z, yaw = 0, y = 0, s = MODEL_SCALE) {
+  return loadGLB(name).then(root => {
+    root.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+    root.rotation.y = yaw + FACE;
+    root.scale.setScalar(s);
+    root.updateMatrixWorld(true);
+    const bb = new THREE.Box3().setFromObject(root);
+    const c = new THREE.Vector3(); bb.getCenter(c);
+    window.__natSizes[name] = [+(bb.max.x - bb.min.x).toFixed(2), +(bb.max.y - bb.min.y).toFixed(2), +(bb.max.z - bb.min.z).toFixed(2)];
+    root.position.x += x - c.x; root.position.z += z - c.z; root.position.y += y - bb.min.y;
+    APT.add(root);
+    root.updateMatrixWorld(true);
+    (window.__furniture || (window.__furniture = [])).push({ name, box: new THREE.Box3().setFromObject(root) });
+    return root;
+  }).catch(e => { console.warn('glTF load fail:', name, e.message || e); return null; });
+}
 
-// 침실2 (좌측 전면)
-bed(-5.0, 3.0, Math.PI, false);
-desk(-4.0, 1.4, Math.PI / 2);
-// 침실3 (좌측 중앙)
-bed(-5.1, -0.9, Math.PI / 2, false);
-wardrobe(-4.1, -1.9, 1.6, 0);
+async function furnish() {
+  const jobs = [];
+  const P = (...a) => jobs.push(place(...a));
 
-// 공용욕실 (우측 후면)
-bathroom(3.0, -3.9, true);
+  // --- 거실 (중앙 전면, 정면 = -Z 쪽 TV) ---
+  P('rugRectangle', -1.0, 2.6, 0, 0.005);
+  P('loungeSofaLong', -1.0, 3.8, Math.PI);               // 등받이 +Z, 착석 -Z(TV 향)
+  P('loungeChair', 1.0, 2.6, -Math.PI / 2);
+  P('tableCoffee', -1.0, 2.4, 0);
+  P('cabinetTelevision', -1.0, 0.5, 0);                  // 정면 +Z(소파 향)
+  P('televisionModern', -1.0, 0.55, 0, 0.5);
+  P('pottedPlant', 1.5, 3.8, 0);
 
-// 현관 (좌측 후면)
-shoeCabinet(-6.1, -3.4, Math.PI / 2);
-APT.add(box(1.4, 0.02, 1.0, mat(0x8a8f98, { roughness: 0.3 }), -5.6, 0.02, -4.3, { cast: false })); // 현관 중문 타일
-plant(-4.9, -4.3, 0.8);
+  // --- 주방 (북벽 z≈-4.6, 정면 +Z) ---
+  const kline = [['kitchenCabinetDrawer', -3.2], ['kitchenSink', -2.4], ['kitchenStove', -1.6],
+                 ['kitchenCabinet', -0.8], ['kitchenCabinetDrawer', 0.0]];
+  kline.forEach(([n, x]) => P(n, x, -4.62, 0));
+  P('hoodModern', -1.6, -4.78, 0, 1.55);
+  [-3.2, -2.4, -0.8, 0.0].forEach(x => P('kitchenCabinetUpper', x, -4.8, 0, 1.5));
+  P('kitchenFridgeLarge', 1.1, -4.5, 0);
+  // 식탁 세트
+  P('table', -1.0, -1.8, 0);
+  [[-1.75, -2.5, 0], [-0.25, -2.5, 0], [-1.75, -1.1, Math.PI], [-0.25, -1.1, Math.PI]]
+    .forEach(([x, z, r]) => P('chair', x, z, r));
+
+  // --- 안방 (우 전면) ---
+  P('bedDouble', 4.3, 3.2, 0);                            // 길이 Z축, 헤드보드 -Z
+  P('sideTableDrawers', 2.85, 3.9, 0); P('sideTableDrawers', 5.75, 3.9, 0);
+  P('lampSquareTable', 2.85, 3.9, 0, 0.55); P('lampSquareTable', 5.75, 3.9, 0, 0.55);
+  P('pottedPlant', 6.0, 1.6, 0);
+  // 드레스룸 (안방 뒤, z≈0 벽면, 정면 +Z)
+  P('bookcaseClosedDoors', 2.4, 0.0, 0); P('bookcaseClosedDoors', 3.3, 0.0, 0);
+  // 안방욕실 (x[4,6.5] z[-2.5,0.8], 뒷벽 z=-2.5)
+  P('bathroomSink', 5.7, -2.25, 0); P('bathroomMirror', 5.7, -2.42, 0, 1.25);
+  P('toilet', 4.4, -2.2, 0); P('showerRound', 5.9, -0.3, Math.PI);
+
+  // --- 침실2 (좌 전면, 헤드보드 좌벽 -X) ---
+  P('bedSingle', -5.4, 3.1, 0);                           // 길이 X축, 헤드 -X
+  P('desk', -4.1, 1.5, -Math.PI / 2); P('chairDesk', -4.6, 1.5, Math.PI / 2);
+  P('computerScreen', -3.95, 1.5, -Math.PI / 2, 0.75);
+
+  // --- 침실3 (좌 중앙) ---
+  P('bedSingle', -5.4, -1.0, 0);
+  P('bookcaseClosedWide', -4.15, -2.3, Math.PI);
+
+  // --- 공용욕실 (우 후면 x[1.8,4] z[-5,-2.5], 뒷벽 z=-5) ---
+  P('bathtub', 3.0, -4.5, 0);
+  P('bathroomSink', 2.2, -3.0, Math.PI); P('bathroomMirror', 2.2, -2.85, Math.PI, 1.25);
+  P('toilet', 3.7, -3.0, Math.PI);
+
+  // --- 현관 (좌 후면) ---
+  P('bookcaseClosed', -6.2, -3.6, Math.PI / 2);
+  P('pottedPlant', -4.8, -4.4, 0);
+  APT.add(box(1.4, 0.02, 1.0, mat(0x8a8f98, { roughness: 0.3 }), -5.6, 0.02, -4.3, { cast: false })); // 현관 타일
+
+  const results = await Promise.all(jobs);
+  const ok = results.filter(Boolean).length;
+  console.log(`glTF 가구 로드: ${ok}/${jobs.length}`);
+  window.__gltfLoaded = ok;
+  if (ok === 0) { console.warn('glTF 전부 실패 → primitive 폴백'); primitiveFurniture(); }
+}
+furnish();
 
 /* =========================================================
    방 카메라 프리셋 & 정보

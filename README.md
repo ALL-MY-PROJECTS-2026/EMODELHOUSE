@@ -35,15 +35,22 @@ https://all-my-projects-2026.github.io/EMODELHOUSE/
 ## 🖼 실제 사진(선택)
 저작권 보호를 위해 마케팅 사진은 저장소에 포함하지 않았습니다. 실제 사진을 넣으려면 `assets/` 폴더에 이미지를 추가하고 갤러리 오버레이를 연결하세요. 3D 평면은 공개된 분양 스펙(전용면적·베이·룸 구성)을 참고자료로 삼아 재구성한 것입니다.
 
+## 🪑 가구 (glTF 실물 에셋)
+가구는 primitive가 아니라 **실제 glTF 3D 모델**입니다. [Kenney Furniture Kit](https://kenney.nl/assets/furniture-kit) (**CC0** — 재배포·상업이용 자유)의 glb 140종을 `assets/models/`에 포함했습니다.
+- `GLTFLoader` 로드 → 바운딩박스 기반 **자동 실척 스케일 + 바닥 자동 안착**
+- 로드 실패 시 기존 **primitive 가구로 자동 폴백**(`primitiveFurniture()`)
+- 스타일: 저폴리(로우폴리). 포토리얼로 바꾸려면 `assets/models/`의 glb만 교체
+
 ## 🛠 기술 스택
-three.js `r160` (CDN importmap) · OrbitControls · PointerLockControls · RoomEnvironment · 순수 정적 파일
+three.js `r160` (CDN importmap) · GLTFLoader · OrbitControls · PointerLockControls · RoomEnvironment · 순수 정적 파일
 
 ## 📁 구조
 ```
-index.html   UI · 타입 선택기 · importmap
-style.css    스타일
-main.js      84A 3Bay 평면 · 가구 · 인터랙션
-.nojekyll    Pages Jekyll 비활성화
+index.html          UI · 타입 선택기 · importmap
+style.css           스타일
+main.js             84A 3Bay 평면 · glTF 가구 로더 · 인터랙션
+assets/models/*.glb Kenney Furniture Kit (CC0)
+.nojekyll           Pages Jekyll 비활성화
 ```
 
 ## 🚀 로컬 실행
