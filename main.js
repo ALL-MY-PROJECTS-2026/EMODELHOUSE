@@ -5,9 +5,8 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 /* =========================================================
-   대명자이그랜드시티 · 84A 타입 가상 모델하우스
-   전용 84㎡ / 공급 114.49㎡ · 3Bay 판상형 (실제 평면 재구성)
-   대구 남구 대명동 2301-2 · GS건설 · 2,023세대 · 2026.4 입주
+   ○○ 아파트 · 84A 타입 가상 모델하우스
+   전용 84㎡ / 공급 114.49㎡ · 3Bay 판상형
    외부 에셋 없이 primitive 구성 → GitHub Pages 즉시 배포
    1 unit = 1 meter
    ========================================================= */
@@ -430,12 +429,12 @@ document.querySelectorAll('.room-btn').forEach(btn => btn.addEventListener('clic
   btn.classList.add('active'); goToRoom(btn.dataset.room);
 }));
 
-/* ---------------- 타입 선택기 (실제 분양 데이터) ---------------- */
+/* ---------------- 타입 선택기 (예시 데이터) ---------------- */
 const TYPES = {
-  '59A': { area: '전용 59.9㎡ / 공급 81.94㎡', bay: '3Bay 판상형 · 방3/욕실1', units: '543세대', price: '3억 7,000만 ~ 3억 9,800만원' },
-  '84A': { area: '전용 84.9㎡ / 공급 114.49㎡', bay: '3Bay 판상형 · 방3/욕실2', units: '213세대', price: '5억 2,400만 ~ 5억 6,500만원' },
-  '84B': { area: '전용 84.9㎡ / 공급 114.87㎡', bay: '3Bay 판상형 · 방3/욕실2', units: '254세대', price: '5억 1,900만 ~ 5억 5,800만원' },
-  '101': { area: '전용 101.9㎡ / 공급 137.56㎡', bay: '4Bay 판상형 · 방4/욕실2', units: '57세대', price: '6억 5,000만 ~ 6억 9,900만원' },
+  '59A': { area: '전용 59.9㎡ / 공급 81.94㎡', bay: '3Bay 판상형', room: '방3 · 욕실1' },
+  '84A': { area: '전용 84.9㎡ / 공급 114.49㎡', bay: '3Bay 판상형', room: '방3 · 욕실2' },
+  '84B': { area: '전용 84.9㎡ / 공급 114.87㎡', bay: '3Bay 판상형', room: '방3 · 욕실2' },
+  '101': { area: '전용 101.9㎡ / 공급 137.56㎡', bay: '4Bay 판상형', room: '방4 · 욕실2' },
 };
 const typeInfo = document.getElementById('type-info');
 function showType(key) {
@@ -443,7 +442,7 @@ function showType(key) {
   const built = key === '84A' ? '<span class="live-tag">● 3D 뷰</span>' : '<span class="soon-tag">평면 정보</span>';
   typeInfo.innerHTML = `<div class="ti-head"><strong>${key} 타입</strong> ${built}</div>
     <div class="ti-row">${d.area}</div><div class="ti-row">${d.bay}</div>
-    <div class="ti-row">공급 ${d.units}</div><div class="ti-row ti-price">분양가 ${d.price}</div>`;
+    <div class="ti-row ti-price">${d.room}</div>`;
   typeInfo.classList.add('show');
 }
 document.querySelectorAll('.type-btn').forEach(b => b.addEventListener('click', () => {
@@ -483,13 +482,18 @@ const plControls = new PointerLockControls(camera, renderer.domElement);
 const walkHint = document.getElementById('walk-hint');
 const keys = {}; let walkMode = false, savedCam = null;
 document.getElementById('btn-walk').addEventListener('click', () => walkHint.classList.remove('hidden'));
+const minimap = document.getElementById('minimap');
+const hud = document.getElementById('hud');
 document.getElementById('btn-walk-start').addEventListener('click', () => {
   walkHint.classList.add('hidden');
   savedCam = { pos: camera.position.clone(), target: orbit.target.clone() };
-  camera.position.set(-1.0, 1.6, 3.0); orbit.enabled = false; walkMode = true; animView = null; plControls.lock();
+  camera.position.set(-1.0, 1.6, 3.0); orbit.enabled = false; walkMode = true; animView = null;
+  minimap.classList.remove('hidden'); hud.classList.add('hidden'); drawMinimap();
+  plControls.lock();
 });
 plControls.addEventListener('unlock', () => {
   if (!walkMode) return; walkMode = false; orbit.enabled = true;
+  minimap.classList.add('hidden'); hud.classList.remove('hidden');
   if (savedCam) { camera.position.copy(savedCam.pos); orbit.target.copy(savedCam.target); }
 });
 addEventListener('keydown', e => keys[e.code] = true);
@@ -504,6 +508,47 @@ function updateWalk(dt) {
   plControls.moveRight(vel.x); plControls.moveForward(-vel.z);
   const p = camera.position;
   p.x = Math.max(-HW, Math.min(HW, p.x)); p.z = Math.max(-HD, Math.min(HD, p.z)); p.y = 1.6;
+  drawMinimap();
+}
+
+/* ---------------- 미니맵 (평면도 + 현재 위치/시선) ---------------- */
+const mmCanvas = document.getElementById('minimap-canvas');
+const mmCtx = mmCanvas.getContext('2d');
+const MM = { W: 220, H: 170, scale: 15, offX: 12.5, offY: 10 };
+const mmX = x => MM.offX + (x + 6.5) * MM.scale;   // 세계 x → 캔버스 (좌-우)
+const mmY = z => MM.offY + (z + 5) * MM.scale;      // 세계 z → 캔버스 (북 위, 남/발코니 아래)
+const MM_WALLS = [
+  [-3.6, -5, -3.6, 5], [1.8, -5, 1.8, 5],
+  [-6.5, 0.8, -3.6, 0.8], [-6.5, -2.5, -3.6, -2.5],
+  [1.8, 0.8, 6.5, 0.8], [4.0, -2.5, 4.0, 0.8],
+  [1.8, -2.5, 6.5, -2.5], [4.0, -5, 4.0, -2.5],
+];
+const MM_LABELS = [
+  ['거실', -1.0, 2.7], ['주방', -1.0, -3.6], ['안방', 4.3, 3.1], ['드레스', 2.9, 0.2],
+  ['침실', -5.1, 3.0], ['침실', -5.1, -1.0], ['욕실', 3.0, -3.7], ['욕실', 5.2, -1.2], ['현관', -5.6, -3.9],
+];
+const _mdir = new THREE.Vector3();
+function drawMinimap() {
+  const c = mmCtx; c.clearRect(0, 0, MM.W, MM.H);
+  const ox = mmX(-6.5), oy = mmY(-5), ww = 13 * MM.scale, hh = 10 * MM.scale;
+  c.fillStyle = 'rgba(255,255,255,0.06)'; c.fillRect(ox, oy, ww, hh);
+  c.strokeStyle = 'rgba(255,255,255,0.65)'; c.lineWidth = 2; c.strokeRect(ox, oy, ww, hh);
+  c.lineWidth = 1.4;
+  for (const [x1, z1, x2, z2] of MM_WALLS) { c.beginPath(); c.moveTo(mmX(x1), mmY(z1)); c.lineTo(mmX(x2), mmY(z2)); c.stroke(); }
+  // 전면 발코니 창호 강조
+  c.strokeStyle = 'rgba(110,168,254,0.9)'; c.lineWidth = 2.5;
+  c.beginPath(); c.moveTo(mmX(-6.5), mmY(5)); c.lineTo(mmX(6.5), mmY(5)); c.stroke();
+  // 실 이름
+  c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '700 8px -apple-system, sans-serif'; c.textAlign = 'center';
+  for (const [t, x, z] of MM_LABELS) c.fillText(t, mmX(x), mmY(z) + 3);
+  // 플레이어 위치 + 시야 콘
+  const px = mmX(camera.position.x), py = mmY(camera.position.z);
+  camera.getWorldDirection(_mdir);
+  const a = Math.atan2(_mdir.z, _mdir.x), spread = 0.5, r = 20;
+  c.fillStyle = 'rgba(110,168,254,0.28)';
+  c.beginPath(); c.moveTo(px, py); c.arc(px, py, r, a - spread, a + spread); c.closePath(); c.fill();
+  c.beginPath(); c.arc(px, py, 4, 0, 7); c.fillStyle = '#6ea8fe'; c.fill();
+  c.lineWidth = 1.5; c.strokeStyle = '#fff'; c.stroke();
 }
 
 /* ---------------- 리사이즈 & 루프 ---------------- */

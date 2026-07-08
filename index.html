@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>대명자이그랜드시티 · 84A 가상 모델하우스</title>
-  <meta name="description" content="대명자이그랜드시티 84A 타입 3Bay 판상형 가상 모델하우스 (three.js)" />
+  <title>○○ 아파트 · 84A 가상 모델하우스</title>
+  <meta name="description" content="○○ 아파트 84A 타입 3Bay 판상형 가상 모델하우스 (three.js)" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏢</text></svg>" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -13,7 +13,7 @@
   <div id="loader">
     <div class="loader-inner">
       <div class="loader-logo">🏢</div>
-      <h1>대명자이그랜드시티</h1>
+      <h1>○○ 아파트</h1>
       <p>84A 가상 모델하우스를 준비하고 있습니다…</p>
       <div class="bar"><span id="bar-fill"></span></div>
     </div>
@@ -21,9 +21,9 @@
 
   <!-- 상단 브랜드 -->
   <header id="topbar">
-    <div class="brand"><span class="brand-mark">🏢</span> 대명자이그랜드시티</div>
-    <div class="brand-sub">84A · 전용 84㎡ · 3Bay 판상형 · 대구 남구 대명동</div>
-    <div class="brand-spec">2,023세대 · 17개동 · 지하2~지상34층 · 2026.4 입주 · GS건설</div>
+    <div class="brand"><span class="brand-mark">🏢</span> ○○ 아파트</div>
+    <div class="brand-sub">84A · 전용 84㎡ · 3Bay 판상형</div>
+    <div class="brand-spec">방3 · 욕실2 · 공급 114.49㎡ · 지하2~지상34층</div>
   </header>
 
   <!-- 공간 이동 -->
@@ -83,6 +83,12 @@
 
   <div id="room-info"></div>
   <div id="hud">드래그: 회전 · 휠: 확대 · 우클릭: 이동</div>
+
+  <!-- 1인칭 미니맵 -->
+  <div id="minimap" class="hidden">
+    <div class="minimap-title">평면도</div>
+    <canvas id="minimap-canvas" width="220" height="170"></canvas>
+  </div>
 
   <canvas id="scene"></canvas>
 
